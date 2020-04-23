@@ -13,6 +13,9 @@ class SlidePuzzle:
         #array for coord on screen for the grid
         self.tilepos = { (x,y): (x*(ts+ms)+ms, y*(ts+ms)+ms) for y in range (gs[1]) for x in range(gs[0])} 
 
+        #text 
+        self.font = pygame.font.Font(None, 120)
+
     def update(self,dt): 
         pass
 
@@ -21,7 +24,9 @@ class SlidePuzzle:
             x,y = self.tilepos[self.tiles[i]]
             pygame.draw.rect(screen, (0,255,0), (x,y, self.ts, self.ts))
 
+            text = self.font.render(str(i+1), 2, (0,0,0))
 
+            screen.blit(text, (x,y))
 
 def main(): 
     pygame.init()
