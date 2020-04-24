@@ -1,6 +1,10 @@
 import pygame, sys, os, random
 
 class SlidePuzzle:
+
+    prev = None 
+    speed = 500
+
     def __init__(self,gs,ts,ms):  #gridSize, size of tiles, margin size
         self.gs, self.ts, self.ms = gs,ts,ms
 
@@ -8,15 +12,19 @@ class SlidePuzzle:
 
         self.tiles_len  = gs[0]*gs[1]-1 
         self.tiles = [(x,y) for y in range (gs[1]) for x in range(gs[0])] 
+       
+       #We have to identical array of tile pos to use one to slide them to the new position
+        self.tilepos=[(x*(ts+ms)+ms, y*(ts+ms)+ms) for y in range (gs[1]) for x in range(gs[0])] #actual position on screen
         #array for coord on screen for the grid
-        self.tilepos = { (x,y): (x*(ts+ms)+ms, y*(ts+ms)+ms) for y in range (gs[1]) for x in range(gs[0])} 
-        self.prev = None 
+        self.tilePOS = { (x,y): (x*(ts+ms)+ms, y*(ts+ms)+ms) for y in range (gs[1]) for x in range(gs[0])} #the place they slide to
+        
 
         self.images = []
         #text 
         font = pygame.font.Font(None, 120)
         
         for i in range (self.tiles_len): 
+            x,y = self.tilepos[i]
             image = pygame.Surface((ts,ts))
             image.fill((0,255,0))
             text = font.render(str(i+1), 2, (0,0,0))
@@ -24,7 +32,7 @@ class SlidePuzzle:
             image.blit(text, ((ts-w)/2, (ts-h)/2))
             self.images+=[image]
 
-        self.switch((0,0))
+        #self.switch((0,0))
 
 
     def getBlank(self): 
@@ -55,20 +63,31 @@ class SlidePuzzle:
         
 
     def update(self,dt): 
+        
         mouse = pygame.mouse.get_pressed()
         mpos = pygame.mouse.get_pos()
 
         if mouse[0]:
-
             x, y  = mpos[0]%(self.ts+self.ms), mpos[0]%(self.ts+self.ms)
             if x>self.ms and y>self.ms:
                 tile = mpos[0]//self.ts, mpos[1]//self.ts
                 if self.in_grid(tile) and tile in self.adjacent():
                     self.switch(tile)
 
+        s = self.speed * dt 
+        for i in range (self.tiles_len): 
+            x,y = self.tilepos[i] # Current pos
+            X,Y = self.tilePOS[self.tiles[i]] #Target pos
+            #If the value between the current and target is less than speed, we can just let it jump right into place. 
+            #Otherwise, we just need to add/substract in direction
+            dx,dy = X-x, Y-y
+            self.tilepos[i] = (X if abs(dx)<s else x+s if dx>0 else x-s), (Y if abs(dy)<s else y+s if dy>0 else y-s)
+
+
+
     def draw(self, screen):
         for i in range (self.tiles_len): 
-            x,y = self.tilepos[self.tiles[i]]
+            x,y = self.tilepos[i]
             screen.blit(self.images[i], (x,y))
 
     def events (self, event): 
