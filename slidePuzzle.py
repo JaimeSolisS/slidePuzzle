@@ -41,7 +41,17 @@ class SlidePuzzle:
         self.tiles[-1] = pos  
     opentile= property(getBlank, setBlank)
     
+    def sliding(self):
+        for i in range (self.tiles_len): 
+            x,y = self.tilepos[i] # Current pos
+            X,Y = self.tilePOS[self.tiles[i]] #Target pos
+            if x!=X or y!=Y:
+                return True
+
+
     def switch(self, tile): 
+        if self.sliding():
+            return 
         self.tiles[self.tiles.index(tile)], self.opentile, self.prev = self.opentile, tile, self.opentile
 
     def in_grid(self, tile ): 
